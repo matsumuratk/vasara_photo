@@ -13,19 +13,23 @@ import os
 import os.path
 import sys
 import shutil
+import logging
 
-PREDICTOR_PATH = "/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/shape_predictor_68_face_landmarks.dat"
+import config
+
+logging.basicConfig(filename='logging.log',level=logging.DEBUG)
+
+PREDICTOR_PATH = config.PREDICTOR_PATH
+SRCPATH = config.SRCPATH
+DESTPATH = config.DESTPATH
+
+
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(PREDICTOR_PATH)
 
-SRCPATH = "/Users/taku/Google Drive File Stream/マイドライブ/着物写真(店舗撮影用)/"
 img_extensions = [".jpg",".JPG",".jpeg",".JPEG"]
 
 SCALE_FACTOR = 1
-
-DESTPATH = "/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/photo/"
-
-TARGETPATH = ["鎌倉駅前店","秋葉原 神田明神店","鎌倉小町通り店","浅草寺店"]
 
 class OneFace(Exception):
     pass
@@ -34,49 +38,54 @@ class NoFaces(Exception):
     pass
 
 def main():
-    # fname = os.path.basename(sys.argv[1])
 
     #対象フォルダリストよりファイルを取得
-    #for dir in [f for f in os.listdir(SRCPATH) if os.path.isdir(os.path.join(SRCPATH, f))]:
-    #残りのパスに対して処理
-    for dir in TARGETPATH:
-
-        src_path = SRCPATH + dir
-        files = os.listdir(src_path)
+    #SRCPATH配下のフォルダリストを取得
+    for dir in [f for f in os.listdir(SRCPATH) if os.path.isdir(os.path.join(SRCPATH, f))]:
+        
+        #DESTPATHにフォルダがなければ、作成
+        src_path = SRCPATH + "/" + dir
+        dest_path = DESTPATH + "/" + dir
+        if not (os.path.isdir(dest_path)):
+            os.mkdir(dest_path)
+            logging.info("make dir: " + dest_path)
 
         #フォルダ内のファイルを取得
+        files = os.listdir(src_path)
         for  file_name in [f for f in files if os.path.isfile(os.path.join(src_path, f))]:
 
             #既にある処理済みのファイルはスキップ
             name, ext = os.path.splitext(file_name)
-            if(os.path.isfile(DESTPATH + file_name) or os.path.isfile(DESTPATH + file_name + "_1")):
-                print(name + " is skip")
+            if(os.path.isfile(DESTPATH + "/" + file_name) or os.path.isfile(DESTPATH + "/" + file_name + "_1")):
+                logging.info(name + " is skip")
                 continue
 
             #拡張子で画像のみを対象に
             name, ext = os.path.splitext(file_name)
             if(ext in img_extensions):
-                print(src_path + "/" + file_name)
+                logging.info(src_path + "/" + file_name)
 
                 #処理用画像作成処理
-                mask_face_and_write(src_path + "/" + file_name)
+                mask_face_and_write(src_path + "/" + file_name, dest_path)
+        
 
 
-def mask_face_and_write(fname):
+def mask_face_and_write(fname,dest_path):
+    logging.info("make_face_and_write: " + fname)
 
     try:
         im, landmarks = read_im_and_landmarks(fname)
     except OneFace:
         #一人だけの場合は、そのままファイルをコピー
-        print(fname + " One Face")
+        logging.info(fname + " One Face")
         basename = os.path.basename(fname)
 
-        dst = DESTPATH + basename
+        dst = DESTPATH + "/" + basename
         shutil.copyfile(fname,dst)
         return
 
     except NoFaces:
-        print(fname + " No Faces")
+        logging.info(fname + " No Faces")
         return
 
     #複数人の顔を、一人を除いて塗りつぶし
@@ -84,7 +93,7 @@ def mask_face_and_write(fname):
         im1 = im.copy()
         basename = os.path.basename(fname)
         name, ext = os.path.splitext(basename)
-        dstfilename = DESTPATH + name + '_' + str(cnt) + ext
+        dstfilename = dest_path + "/" + name + '_' + str(cnt) + ext
  
         #複数人の顔を、一人を除いて塗りつぶし
         for i,rect in enumerate(landmarks):
@@ -93,7 +102,7 @@ def mask_face_and_write(fname):
         
         cv2.imwrite(dstfilename, im1)
 
-        print("write: " +  dstfilename)
+        logging.info("write: " +  dstfilename)
 
 
 def get_landmarks(im):

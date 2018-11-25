@@ -1,0 +1,20 @@
+INFO:root:make dir: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg
+INFO:root:make_face_and_write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg No Faces
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/photo.jpg
+INFO:root:make_face_and_write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/photo.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/photo_0.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/photo_1.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/photo_2.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/photo_3.jpg
+INFO:root:make dir: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg
+INFO:root:make_face_and_write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg No Faces
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/photo.jpg
+INFO:root:make_face_and_write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/photo.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_0.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_1.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_2.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_3.jpg
