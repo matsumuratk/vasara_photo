@@ -77,7 +77,7 @@ def mask_face_and_write(fname,dest_path):
         im, landmarks = read_im_and_landmarks(fname)
     except OneFace:
         #一人だけの場合は、そのままファイルをコピー
-        logging.info("One Face: " + fname + )
+        logging.info("One Face: " + fname)
         basename = os.path.basename(fname)
 
         dst = dest_path + "/" + basename
