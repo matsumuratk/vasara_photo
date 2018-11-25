@@ -77,15 +77,15 @@ def mask_face_and_write(fname,dest_path):
         im, landmarks = read_im_and_landmarks(fname)
     except OneFace:
         #一人だけの場合は、そのままファイルをコピー
-        logging.info(fname + " One Face")
+        logging.info("One Face: " + fname + )
         basename = os.path.basename(fname)
 
-        dst = DESTPATH + "/" + basename
+        dst = dest_path + "/" + basename
         shutil.copyfile(fname,dst)
         return
 
     except NoFaces:
-        logging.info(fname + " No Faces")
+        logging.info("No Faces:" + fname )
         return
 
     #複数人の顔を、一人を除いて塗りつぶし
