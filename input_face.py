@@ -5,39 +5,89 @@ import pandas as pd
 import glob
 import os
 import time
+import sys
 from retrying import retry, RetryError
 
+import config
 
 """
 AZURE Face APIにデータを登録する
 """
 
-SUBSCRIPTION_KEY  = "9b386e76643345bf9a3de504121a17f7"
-GROUP_NAME = "kimono_search"
-BASE_URL = "https://japaneast.api.cognitive.microsoft.com/face/v1.0/"
-SRC_PATH = "/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/photo/"
-IMG_BASE_URL = "https://storage.googleapis.com/kimono_search/"
+SUBSCRIPTION_KEY  = config.SUBSCRIPTION_KEY
+GROUP_NAME = config.GROUP_NAME
+BASE_URL = config.BASE_URL
+SRC_PATH = config.IMG_SRC_PATH
+IMG_BASE_URL = config.IMG_BASE_URL
 
-def main():
+logging.basicConfig(filename='logging.log',level=logging.DEBUG)
 
-    """
-    #Group削除処理
-    ret = deleteGroup()
+#
+#argument
+# make:     make group
+# delete:   delete group
+# import:   import image data
+# train:    train data
 
-    #Group作成処理
-    ret = makeGroup()
+def main(argv):
 
-    #取り込み処理
-    importPerson()
+    if argv[1] == "make":
+        #Group作成処理
+        makeGroup()
 
-    """
+    elif argv[1] == "delete":
+        #Group削除処理
+        deleteGroup()
 
-    #学習処理
-    trainGroup()
+    elif argv[1] == "import":
+        #取り込み処理
+        importPerson()
 
-    #内容チェック
-    checkPerson()
+    elif argv[1] == "train":
+        #学習処理
+        trainGroup()
   
+    else:
+        print("argument")
+        print(" make:     make group")
+        print(" delete:   delete group")
+        print(" import:   import image data")
+        print(" train:    train data")
+
+
+#画像グループの作成
+def makeGroup():
+    logger.info("makeGroup:")
+    end_point = BASE_URL + "largepersongroups/" + GROUP_NAME
+    payload = {
+        "name": GROUP_NAME
+    }
+    headers = {
+        "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
+    }
+    r = requests.put(
+        end_point,
+        headers = headers,
+        json = payload
+    )
+    logger.info(r.text)
+
+#画像グループ削除
+def deleteGroup():
+    logger.info("deleteGroup:")
+    end_point = BASE_URL + "largepersongroups/" + GROUP_NAME
+    payload = {
+        "name": GROUP_NAME
+    }
+    headers = {
+        "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
+    }
+    r = requests.delete(
+        end_point,
+        headers = headers,
+        json = payload
+    )
+    logger.info(r.text)
 
 
 def importPerson():
@@ -58,26 +108,12 @@ def importPerson():
         if persistedFaceId == None:
             deletePerson(personId)
 
-#画像グループの作成
-def makeGroup():
-    end_point = BASE_URL + "persongroups/" + GROUP_NAME
-    payload = {
-        "name": GROUP_NAME
-    }
-    headers = {
-        "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
-    }
-    r = requests.put(
-        end_point,
-        headers = headers,
-        json = payload
-    )
-    print (r.text)
 
 @retry(stop_max_attempt_number=10,wait_fixed=5000)
 def makePerson(name,userData):
-    end_point = BASE_URL + "persongroups/" + GROUP_NAME + "/persons"
-    print (end_point)
+    logger.info("makePerson: " + name)
+    end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/persons"
+    logger.info(end_point)
     headers = {
         "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
     }
@@ -90,15 +126,16 @@ def makePerson(name,userData):
         headers = headers,
         json = payload
     )
-    print (r.text)
+    logger.info(r.text)
     personId = r.json()["personId"]
     return personId
 
 @retry(stop_max_attempt_number=10,wait_fixed=5000)
 def addFaceToPerson(personId, imageURL):
+    logger.info("addFaceToPerson: "imageURL)
     if personId != None:
         print(personId)
-        end_point = BASE_URL + "persongroups/" + GROUP_NAME + "/persons/" + personId  + "/persistedFaces"
+        end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/persons/" + personId  + "/persistedFaces"
         print(end_point)
         print(imageURL)
         headers = {
@@ -114,24 +151,24 @@ def addFaceToPerson(personId, imageURL):
         )
       
         try:
-            print("Successfuly added face to person")
-            print (r.text)
+            logger.info("Successfuly added face to person")
+            logger.info(r.text)
             persistedFaceId = r.json()
         except Exception as e:
-            print("Failed to add a face to person")
-            print(e)
+            logger.info("Failed to add a face to person")
+            logger.info(traceback.format_exc())
             persistedFaceId = None
         return persistedFaceId
     else:
-        print("personId is not set.")
+        logger.info("personId is not set.")
 
 @retry(stop_max_attempt_number=10,wait_fixed=5000)
 def deletePerson(personId):
-    print ("deletePerson: " + personId)
+    logger.info("deletePerson: " + personId)
     if personId != None:
-        print(personId)
-        end_point = BASE_URL + "persongroups/" + GROUP_NAME + "/persons/" + personId
-        print(end_point)
+        logger.info(personId)
+        end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/persons/" + personId
+        logger.info("endPoint: " + end_point)
         headers = {
             "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
         }
@@ -141,23 +178,23 @@ def deletePerson(personId):
         )
       
         try:
-            print("Successfuly delete person")
-            print (r.text)
+            logger.info("Successfuly delete person")
+            logger.info(r.text)
             persistedFaceId = r.json()
         except Exception as e:
-            print("Failed to delete person")
-            print(e)
+            logger.info("Failed to delete person")
+            logger.info(traceback.format_exc())
             persistedFaceId = None
 
     else:
-        print("personId is not set.")
+        logger.info("personId is not set.")
 
 
-@retry(stop_max_attempt_number=10,wait_fixed=5000)
+#学習処理
 def trainGroup():
-    print("trainGroup")
+    logger.info("trainGroup")
     end_point = BASE_URL + "persongroups/" + GROUP_NAME + "/train"
-    print(end_point)
+    logger.info(end_point)
     headers = {
         "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
     }
@@ -165,12 +202,12 @@ def trainGroup():
         end_point,
         headers = headers,
     )
-    print(r.text)
+    logger.info(r.text)
 
 @retry(stop_max_attempt_number=10,wait_fixed=5000)
 def detectFace(imageUrl):
     end_point = BASE_URL + "detect"
-    print (end_point)
+    logger.info(end_point)
     headers = {
         "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
     }
@@ -184,16 +221,16 @@ def detectFace(imageUrl):
     )
     try:
         faceId = r.json()[0]["faceId"]
-        print("faceId Found:{}".format(faceId))
+        logger.info("faceId Found:{}".format(faceId))
         return r.json()[0]
     except Exception as e:
-        print("faceId not found:{}".format(e))
+        logger.info("faceId not found:{}".format(e))
         return None
    
 @retry(stop_max_attempt_number=10,wait_fixed=5000)
 def identifyPerson(faceId):
     end_point = BASE_URL + "identify"
-    print (end_point)
+    logger.info(end_point)
     headers = {
         "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
     }
@@ -207,13 +244,12 @@ def identifyPerson(faceId):
         json = payload,
         headers = headers
     )
-    print(r.text)
+    logger.info(r.text)
     return r.json()[0]
 
 
-@retry(stop_max_attempt_number=10,wait_fixed=5000)
 def getPersonInfoByPersonId(personId):
-    end_point = BASE_URL + "persongroups/" + GROUP_NAME + "/persons/" + personId
+    end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/persons/" + personId
     print (end_point)
     headers = {
         "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
@@ -222,46 +258,9 @@ def getPersonInfoByPersonId(personId):
         end_point,
         headers = headers
     )
-    print(r.text)
+    logger.info(r.text)
     return r.json()
 
-
-@retry(stop_max_attempt_number=10,wait_fixed=5000)
-def deleteGroup():
-    end_point = BASE_URL + "persongroups/" + GROUP_NAME
-    payload = {
-        "name": GROUP_NAME
-    }
-    headers = {
-        "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
-    }
-    r = requests.delete(
-        end_point,
-        headers = headers,
-        json = payload
-    )
-    print (r.text)
-
-
-#テスト用ロジック
-def checkPerson():
-   #画像から、personを特定するときのサンプルコードです。
-    image = "https://cdn.mainichi.jp/vol1/2016/09/02/20160902ddm001010041000p/9.jpg?1"
-    faceId = detectFace(image)
-    person = identifyPerson(faceId["faceId"])
-    if person["candidates"]: #学習データに候補があれば
-        personId = person["candidates"][0]["personId"]
-        confidence = person["candidates"][0]["confidence"]
-        personInfo = getPersonInfoByPersonId(personId)
-        print("name=" + personInfo["name"])
-        print("data=" + personInfo["userData"])
-        print("confidence=" + str(confidence))
-
-    else:
-        print ("No candidates found")
-    
-
-
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
 
