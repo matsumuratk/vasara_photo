@@ -18,3 +18,31 @@ INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草�
 INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_1.jpg
 INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_2.jpg
 INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_3.jpg
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/oneface.jpg
+INFO:root:make_face_and_write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/oneface.jpg
+INFO:root:One Face: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/oneface.jpg
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg
+INFO:root:make_face_and_write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg
+INFO:root:No Faces:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/noface.jpg
+INFO:root:/Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/photo.jpg
+INFO:root:make_face_and_write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/input/浅草寺/photo.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_0.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_1.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_2.jpg
+INFO:root:write: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output/浅草寺/photo_3.jpg
+INFO:root:makeGroup:
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): japaneast.api.cognitive.microsoft.com:443
+DEBUG:urllib3.connectionpool:https://japaneast.api.cognitive.microsoft.com:443 "PUT /face/v1.0/largepersongroups/kimono_search HTTP/1.1" 200 0
+DEBUG:chardet.universaldetector:no data received!
+DEBUG:chardet.universaldetector:no probers hit minimum threshold
+INFO:root:
+INFO:root:input dir: 浅草寺
+INFO:root:input file: /Users/taku/dev/Vasara/KimonoSearch/vasara_photo/output//浅草寺/oneface.jpg
+INFO:root:makePerson: oneface.jpg
+INFO:root:https://japaneast.api.cognitive.microsoft.com/face/v1.0/largepersongroups/kimono_search/persons
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): japaneast.api.cognitive.microsoft.com:443
+DEBUG:urllib3.connectionpool:https://japaneast.api.cognitive.microsoft.com:443 "POST /face/v1.0/largepersongroups/kimono_search/persons HTTP/1.1" 200 51
+INFO:root:{"personId":"48230511-7ec8-4e8d-b816-b50e80bd0b2f"}
+INFO:root:addFaceToPerson: https://storage.googleapis.com/vasara_photo/image2/浅草寺/oneface.jpg
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): japaneast.api.cognitive.microsoft.com:443
+DEBUG:urllib3.connectionpool:https://japaneast.api.cognitive.microsoft.com:443 "POST /face/v1.0/largepersongroups/kimono_search/persons/48230511-7ec8-4e8d-b816-b50e80bd0b2f/persistedFaces HTTP/1.1" 400 201

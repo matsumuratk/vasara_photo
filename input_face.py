@@ -6,6 +6,7 @@ import glob
 import os
 import time
 import sys
+import traceback
 from retrying import retry, RetryError
 
 import config
@@ -17,10 +18,11 @@ AZURE Face APIにデータを登録する
 SUBSCRIPTION_KEY  = config.SUBSCRIPTION_KEY
 GROUP_NAME = config.GROUP_NAME
 BASE_URL = config.BASE_URL
-SRC_PATH = config.IMG_SRC_PATH
+IMG_SRC_PATH = config.IMG_SRC_PATH
 IMG_BASE_URL = config.IMG_BASE_URL
 
 logging.basicConfig(filename='logging.log',level=logging.DEBUG)
+
 
 #
 #argument
@@ -57,7 +59,7 @@ def main(argv):
 
 #画像グループの作成
 def makeGroup():
-    logger.info("makeGroup:")
+    logging.info("makeGroup:")
     end_point = BASE_URL + "largepersongroups/" + GROUP_NAME
     payload = {
         "name": GROUP_NAME
@@ -70,11 +72,11 @@ def makeGroup():
         headers = headers,
         json = payload
     )
-    logger.info(r.text)
+    logging.info(r.text)
 
 #画像グループ削除
 def deleteGroup():
-    logger.info("deleteGroup:")
+    logging.info("deleteGroup:")
     end_point = BASE_URL + "largepersongroups/" + GROUP_NAME
     payload = {
         "name": GROUP_NAME
@@ -87,33 +89,40 @@ def deleteGroup():
         headers = headers,
         json = payload
     )
-    logger.info(r.text)
+    logging.info(r.text)
 
 
 def importPerson():
     #取り込み処理
-    #SRCPATHフォルダ内の画像を学習させる
-    files = glob.glob(SRC_PATH + "/*")
-    for file in files:
-        name = os.path.basename(file)
+    #IMG_SRCPATHフォルダ内の画像を学習させる
+    #IMG_SRCPATH配下のフォルダリストを取得
+    for dir in [f for f in os.listdir(IMG_SRC_PATH) if os.path.isdir(os.path.join(IMG_SRC_PATH, f))]:
+        logging.info("input dir: " + dir)
 
-        image = IMG_BASE_URL + name
-        link = IMG_BASE_URL + name
-        #personを登録し、personIdを返す
-        personId = makePerson(name,link)
-        #personIdをもとに、そのpersonに画像を追加する
-        persistedFaceId = addFaceToPerson(personId, image)
+        #dir配下のファイルを学習
+        files = glob.glob(IMG_SRC_PATH + "/" + dir + "/*")
+        for file in files:
+            logging.info("input file: " + file)
+            name = os.path.basename(file)
+
+            image = IMG_BASE_URL + dir + "/" + name 
+            link = IMG_BASE_URL + dir + "/" + name
+            #personを登録し、personIdを返す
+            personId = makePerson(name,link)
+            #personIdをもとに、そのpersonに画像を追加する
+            persistedFaceId = addFaceToPerson(personId, image)
       
-        #persistedFaceIdが取得できない時は、personIdを削除する
-        if persistedFaceId == None:
-            deletePerson(personId)
+            #persistedFaceIdが取得できない時は、personIdを削除する
+            if persistedFaceId == None:
+                deletePerson(personId)
 
 
+#personを登録し、personIdを返す
 @retry(stop_max_attempt_number=10,wait_fixed=5000)
 def makePerson(name,userData):
-    logger.info("makePerson: " + name)
+    logging.info("makePerson: " + name)
     end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/persons"
-    logger.info(end_point)
+    logging.info(end_point)
     headers = {
         "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
     }
@@ -126,18 +135,19 @@ def makePerson(name,userData):
         headers = headers,
         json = payload
     )
-    logger.info(r.text)
+    logging.info(r.text)
     personId = r.json()["personId"]
     return personId
 
+#personIdをもとに、そのpersonに画像を追加する
 @retry(stop_max_attempt_number=10,wait_fixed=5000)
 def addFaceToPerson(personId, imageURL):
-    logger.info("addFaceToPerson: "imageURL)
+    logging.info("addFaceToPerson: " + imageURL)
     if personId != None:
-        print(personId)
+        logging.info("addFaceToPerson personId: " + personId)
         end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/persons/" + personId  + "/persistedFaces"
-        print(end_point)
-        print(imageURL)
+        logging.info("addFaceToPerson end_point: " + end_point)
+        logging.info("addFaceToPerson imageURL: " + imageURL)
         headers = {
             "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
         }
@@ -151,24 +161,25 @@ def addFaceToPerson(personId, imageURL):
         )
       
         try:
-            logger.info("Successfuly added face to person")
-            logger.info(r.text)
+            logging.info("Successfuly added face to person")
+            logging.info(r.text)
             persistedFaceId = r.json()
         except Exception as e:
-            logger.info("Failed to add a face to person")
-            logger.info(traceback.format_exc())
+            logging.info("Failed to add a face to person")
+            logging.info(traceback.format_exc())
             persistedFaceId = None
         return persistedFaceId
     else:
-        logger.info("personId is not set.")
+        logging.info("personId is not set.")
 
+#personIdを削除する
 @retry(stop_max_attempt_number=10,wait_fixed=5000)
 def deletePerson(personId):
-    logger.info("deletePerson: " + personId)
+    logging.info("deletePerson: " + personId)
     if personId != None:
-        logger.info(personId)
+        logging.info(personId)
         end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/persons/" + personId
-        logger.info("endPoint: " + end_point)
+        logging.info("endPoint: " + end_point)
         headers = {
             "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
         }
@@ -178,23 +189,23 @@ def deletePerson(personId):
         )
       
         try:
-            logger.info("Successfuly delete person")
-            logger.info(r.text)
+            logging.info("Successfuly delete person")
+            logging.info(r.text)
             persistedFaceId = r.json()
         except Exception as e:
-            logger.info("Failed to delete person")
-            logger.info(traceback.format_exc())
+            logging.info("Failed to delete person")
+            logging.info(traceback.format_exc())
             persistedFaceId = None
 
     else:
-        logger.info("personId is not set.")
+        logging.info("personId is not set.")
 
 
 #学習処理
 def trainGroup():
-    logger.info("trainGroup")
-    end_point = BASE_URL + "persongroups/" + GROUP_NAME + "/train"
-    logger.info(end_point)
+    logging.info("trainGroup")
+    end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/train"
+    logging.info(end_point)
     headers = {
         "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
     }
@@ -202,64 +213,8 @@ def trainGroup():
         end_point,
         headers = headers,
     )
-    logger.info(r.text)
+    logging.info(r.text)
 
-@retry(stop_max_attempt_number=10,wait_fixed=5000)
-def detectFace(imageUrl):
-    end_point = BASE_URL + "detect"
-    logger.info(end_point)
-    headers = {
-        "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
-    }
-    payload = {
-        "url": imageUrl
-    }
-    r = requests.post(
-        end_point,
-        json = payload,
-        headers = headers
-    )
-    try:
-        faceId = r.json()[0]["faceId"]
-        logger.info("faceId Found:{}".format(faceId))
-        return r.json()[0]
-    except Exception as e:
-        logger.info("faceId not found:{}".format(e))
-        return None
-   
-@retry(stop_max_attempt_number=10,wait_fixed=5000)
-def identifyPerson(faceId):
-    end_point = BASE_URL + "identify"
-    logger.info(end_point)
-    headers = {
-        "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
-    }
-    faceIds = [faceId]
-    payload = {
-       "faceIds" :faceIds,
-       "personGroupId" :GROUP_NAME,
-    }
-    r = requests.post(
-        end_point,
-        json = payload,
-        headers = headers
-    )
-    logger.info(r.text)
-    return r.json()[0]
-
-
-def getPersonInfoByPersonId(personId):
-    end_point = BASE_URL + "largepersongroups/" + GROUP_NAME + "/persons/" + personId
-    print (end_point)
-    headers = {
-        "Ocp-Apim-Subscription-Key" :SUBSCRIPTION_KEY
-    }
-    r = requests.get(
-        end_point,
-        headers = headers
-    )
-    logger.info(r.text)
-    return r.json()
 
 if __name__ == '__main__':
     main(sys.argv)
