@@ -1,7 +1,6 @@
 import requests
 import json
 import logging
-import pandas as pd
 import glob
 import os
 import time
@@ -22,7 +21,6 @@ IMG_SRC_PATH = config.IMG_SRC_PATH
 IMG_BASE_URL = config.IMG_BASE_URL
 
 logging.basicConfig(filename='logging.log',level=logging.DEBUG)
-
 
 #
 #argument

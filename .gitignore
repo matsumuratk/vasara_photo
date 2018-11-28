@@ -1,0 +1,6 @@
+/.vscode/
+/_pycache/
+logging.log
+/input/
+/output/
+config.py
